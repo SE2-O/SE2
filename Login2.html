@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyline Riyadh - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-image {
+            width: 180px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .logo-text {
+            color: #4CAF50;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #81C784;
+            box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .signup-link a:hover {
+            color: #45a049;
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 0.5rem;
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-requirements li {
+            margin-bottom: 4px;
+        }
+
+        .password-requirements li.invalid {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="login-container">
+        <div class="logo">
+            <img src="images/photo_5782706215028114692_m.jpg" alt="Skyline Riyadh Logo" class="logo-image">
+            <div class="logo-text">Skyline Riyadh</div>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+                <ul class="password-requirements">
+                    <li id="length-requirement" class="invalid">Password must be at least 8 characters long</li>
+                    <li id="special-character-requirement" class="invalid">Password must contain at least one special character</li>
+                    <li id="number-requirement" class="invalid">Password must contain at least two numbers</li>
+                </ul>
+            </div>
+            <button type="submit" class="login-btn">Log in</button>
+        </form>
+
+        <div class="signup-link">
+            Don't have an account? <a href="new_user.html">New User</a>
+        </div>
+        <div class="signup-link" style="margin-top: 0.5rem;">
+            <a href="reset_password.html">Forgot Password? Reset</a> <!-- رابط إعادة تعيين كلمة المرور -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Validate username requirements
+            if (!validateUsername(username)) {
+                showError('Username must be at least 5 characters long and contain at least one number.');
+                return;
+            }
+
+            const storedCredentials = JSON.parse(localStorage.getItem('credentials')) || {};
+
+            // Check if username already exists
+            if (storedCredentials[username]) {
+                // Check if the password matches
+                if (storedCredentials[username] !== password) {
+                    showError('Username or password is incorrect.');
+                    return;
+                }
+            } else {
+                showError('Username does not exist.');
+                return;
+            }
+
+            showSuccess('Login successful! Redirecting...');
+            this.reset();
+            setTimeout(() => {
+                window.location.href = 'index.html'; 
+            }, 2000); 
+        });
+
+        function validateUsername(username) {
+            const lengthValid = username.length >= 5;
+            const numberValid = /\d/.test(username);
+            return lengthValid && numberValid;
+        }
+
+        function validatePassword(password) {
+            const lengthRequirement = document.getElementById('length-requirement');
+            const specialCharacterRequirement = document.getElementById('special-character-requirement');
+            const numberRequirement = document.getElementById('number-requirement');
+
+            let isValid = true;
+
+            if (password.length < 8) {
+                lengthRequirement.classList.add('invalid');
+                isValid = false;
+            } else {
+                lengthRequirement.classList.remove('invalid');
+            }
+
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                specialCharacterRequirement.classList.add('invalid');
+                isValid = false;
+            } else {
+                specialCharacterRequirement.classList.remove('invalid');
+            }
+
+            if ((password.match(/\d/g) || []).length < 2) {
+                numberRequirement.classList.add('invalid');
+                isValid = false;
+            } else {
+                numberRequirement.classList.remove('invalid');
+            }
+
+            return isValid;
+        }
+
+        function showError(message) {
+            const alertBox = document.createElement('div');
+            alertBox.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #fee2e2;
+                color: #dc2626;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+            alertBox.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12" y2="16"></line>
+                </svg>
+                ${message}
+            `;
+            
+            document.body.appendChild(alertBox);
+            setTimeout(() => alertBox.remove(), 3000);
+        }
+
+        function showSuccess(message) {
+            const alertBox = document.createElement('div');
+            alertBox.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #dcfce7;
+                color: #16a34a;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+            alertBox.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                ${message}
+            `;
+            
+            document.body.appendChild(alertBox);
+            setTimeout(() => alertBox.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

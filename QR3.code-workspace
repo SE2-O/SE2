@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../Metro/images"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "QR3"
+	}
+}

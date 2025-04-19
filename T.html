@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-icon {
+            font-size: 30px;
+            color: #4CAF50;
+            margin-right: 10px;
+        }
+        .header-button {
+            padding: 10px 20px;
+            background: #ef9919;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 16px;
+            margin-left: 20px; 
+            
+        }
+
+
+        .header-button:hover {
+            background: #ef9919; 
+            transform: scale(1.05);
+        }
+
+        .layout-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .image-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .main-route {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .station-input {
+            flex: 1;
+            position: relative;
+        }
+
+        .station-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            appearance: none;
+            background-color: white;
+        }
+
+        .station-select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+        button {
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .extension-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px dashed #eee;
+        }
+
+        .extension-inputs {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .extension-inputs input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            margin-top: 1rem;
+            position: relative;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            cursor: grab;
+        }
+
+        .image-container:active {
+            cursor: grabbing;
+        }
+
+        #preview {
+            position: absolute;
+            transition: transform 0.3s ease;
+            max-width: none;
+            touch-action: none;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .zoom-controls {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .extension-inputs {
+                flex-direction: column;
+            }
+
+            .image-container {
+                height: 300px;
+            }
+
+            .layout-wrapper {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <a href="index.html">
+            <i class="fas fa-home header-icon" title="Home"></i>
+        </a>
+        <button class="header-button" onclick="navigateToTickets()">Recent Tickets</button>
+    </div>
+
+    <div class="layout-wrapper">
+        <div class="info-panel">
+            <div class="container">
+                <div class="main-route">
+                    <div class="station-input">
+                        <label>Start station</label>
+                        <select id="startStation" class="station-select"></select>
+                    </div>
+                    <i class="fas fa-arrow-right arrow-icon"></i>
+                    <div class="station-input">
+                        <label>Final station</label>
+                        <select id="finalStation" class="station-select"></select>
+                    </div>
+                </div>
+
+                <button onclick="confirmAndRedirect()" style="width: 100%">Confirm <i class="fas fa-chevron-right"></i></button>
+                <div class="extension-section">
+                    <div class="extension-inputs">
+                        <div class="station-input">
+                            <label>Start station</label>
+                            <input type="text" id="extStart" readonly>
+                        </div>
+                        <div class="station-input">
+                            <label>Final station</label>
+                            <input type="text" id="extFinal" readonly>
+                        </div>
+                    </div>
+                    <div class="station-input" style="margin-top: 1rem;">
+                        <label>Destination <i class="fas fa-subway"></i></label>
+                        <input type="text" id="extension" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-panel">
+            <div class="image-container">
+                <img id="preview" src="images/map.jpeg" alt="Uploaded Image">
+            </div>
+            <div class="zoom-controls">
+                <button onclick="zoomIn()">Zoom In</button>
+                <button onclick="zoomOut()">Zoom Out</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allStations = [
+            { en: "(MOI)Ministry Of Interior", ar: "وزارة الداخلية" },
+            { en: "King Fahad District2", ar: "حي الملك فهد2" },
+            { en: "Al Iman Hospital", ar: "مستشفى الإيمان" },
+            { en: "Al Owd", ar: "العود" },
+            { en: "As Salam", ar: "السلام" },
+            { en: "Qasr Al Hokm", ar: "قصر الحكم" },
+            { en: "Airport T5", ar: "الصالة 5" },
+            { en: "AlHamra", ar: "الحمراء" },
+            { en: "Sultanah", ar: "سلطانة" },
+            { en: "Bank Albilad", ar: "بنك البلاد" },
+            { en: "KAFD", ar: "المركز المالي" },
+            { en: "Sabic", ar: "سابك" },
+            { en: "National Museum", ar: "المتحف الوطني" },
+            { en: "STC", ar: "الإتصالات السعودية" },
+            { en: "Al Jarradiyah", ar: "الجرادية" },
+            { en: "Al Malaz", ar: "الملز" },
+            { en: "An Naseem", ar: "النسيم" },
+            { en: "GOSI", ar: "التأمينات الإجتماعية" },
+            { en: "Ad dhabab", ar: "الضباب" },
+            { en: "Ministry of Education", ar: "وزارة التعليم" },
+            { en: "Dhahrat Al Badiah", ar: "ظهرة البديعة"},
+            {en:"King Fahad Stadium",ar:"استاد الملك فهد"},
+            {en:"GRANADIA",ar:"غرناطيّة"}
+
+        ];
+
+        const distances = {
+            "(MOI)Ministry Of Interior": {
+                "National Museum": 5.7,
+                "Bank Albilad": 4.8
+            },
+            "National Museum": {
+                "(MOI)Ministry Of Interior": 5.7,
+                "Qasr Al Hokm": 4.5,
+                "GOSI": 5.3
+            
+            },
+            "Al Owd": {
+                "Qasr Al Hokm": 4.2,
+                "Al Iman Hospital":6.2
+                
+            },
+            "Bank Albilad": {
+                "(MOI)Ministry Of Interior": 4.8,
+                "STC":4
+            },
+            "Al Iman Hospital":{
+                "Al Owd":6.2
+            },
+             "Al Jarradiyah":{
+                "Qasr Al Hokm": 3.3,
+                "Sultanah":5.7
+             },
+             "Sultanah":{
+                "Al Jarradiyah":5.7,
+                "Dhahrat Al Badiah":4.3
+             },
+             "Dhahrat Al Badiah":{
+                "Sultanah":4.3
+             },
+             "Qasr Al Hokm":{
+                "Al Owd":4.2,
+                "National Museum":4.5,
+                "Al Jarradiyah":3.3,
+                "Al Malaz":6.8
+             },
+             "Al Malaz":{
+                "Qasr Al Hokm":6.8,
+                "An Naseem":10
+             },
+             "An Naseem":{
+                "As Salam":4.1,
+                "Al Malaz":10
+             },
+             "As Salam":{
+                "AlHamra":9.1,
+                "An Naseem":4.1
+             },
+             "AlHamra":{
+                "As Salam":9.1,
+                "Ministry of Education":9.2,
+                "King Fahad Stadium":9.4,
+                "GRANADIA":7.4
+             },
+             "King Fahad Stadium":{
+                "AlHamra":9.4
+             },
+             "Sabic":{
+            
+                "KAFD":11,
+                "Airport T5":21,
+                "GRANADIA":5.8
+             },
+             "GRANADIA":{
+               "AlHamra":7.4,
+               "Sabic":5.8
+             },
+             "Airport T5":{
+                "Sabic":21
+             },
+             "KAFD":{
+                "Sabic":11,
+                 "King Fahad District2":7.9
+             },
+             "King Fahad District2":{
+                "STC":1.5,
+                "KAFD":7.9
+             },
+             "STC":{
+                "Bank Albilad":4,
+                "King Fahad District2":1.5,
+                "Ministry of Education":9.7
+             },
+             "Ministry of Education":{
+                "STC":9.7,
+                "AlHamra":9.2,
+                "Ad dhabab":12
+             },
+             "Ad dhabab":{
+                "Ministry of Education":12,
+                "GOSI":4.8
+             },
+              "GOSI":{
+               "Ad dhabab":4.8,
+               "National Museum":5.3
+              }
+        };
+
+        function initializeStations() {
+            const startSelect = document.getElementById('startStation');
+            const finalSelect = document.getElementById('finalStation');
+
+            startSelect.innerHTML = `
+                <option value="">Select start station</option>
+                ${allStations.map(station => `
+                    <option value="${station.en}">${station.en} | ${station.ar}</option>
+                `).join('')}
+            `;
+
+            populateFinalStations();
+        }
+
+        function populateFinalStations() {
+            const startValue = document.getElementById('startStation').value;
+            const finalSelect = document.getElementById('finalStation');
+
+            const filteredStations = allStations.filter(station =>
+                station.en !== startValue
+            );
+
+            finalSelect.innerHTML = `
+                <option value="">Select final station</option>
+                ${filteredStations.map(station => `
+                    <option value="${station.en}">${station.en} | ${station.ar}</option>
+                `).join('')}
+            `;
+
+            if (!filteredStations.some(station => station.en === finalSelect.value)) {
+                finalSelect.value = '';
+                updateExtension();
+            }
+        }
+
+        function updateExtension() {
+            const startEn = document.getElementById('startStation').value;
+            const finalEn = document.getElementById('finalStation').value;
+
+            const startStation = allStations.find(s => s.en === startEn) || { en: '', ar: '' };
+            const finalStation = allStations.find(s => s.en === finalEn) || { en: '', ar: '' };
+
+            document.getElementById('extStart').value =
+                startEn ? `${startStation.en} / ${startStation.ar}` : '';
+
+            document.getElementById('extFinal').value =
+                finalEn ? `${finalStation.en} / ${finalStation.ar}` : '';
+
+            document.getElementById('extension').value = startEn && finalEn
+                ? `${startStation.en} to ${finalStation.en}\n${startStation.ar} إلى ${finalStation.ar}`
+                : '';
+        }
+
+        document.getElementById('startStation').addEventListener('change', function () {
+            populateFinalStations();
+            updateExtension();
+        });
+
+        document.getElementById('finalStation').addEventListener('change', updateExtension);
+
+        initializeStations();
+
+        function dijkstra(start, end) {
+            const distancesFromStart = {};
+            const previousStations = {};
+            const unvisitedStations = new Set(Object.keys(distances));
+
+            // Initialize distances
+            for (const station of Object.keys(distances)) {
+                distancesFromStart[station] = Infinity;
+                previousStations[station] = null;
+            }
+            distancesFromStart[start] = 0;
+
+            while (unvisitedStations.size) {
+                const currentStation = [...unvisitedStations].reduce((minStation, station) => {
+                    return distancesFromStart[station] < distancesFromStart[minStation] ? station : minStation;
+                });
+
+                if (currentStation === end) break;
+
+                unvisitedStations.delete(currentStation);
+                for (const neighbor in distances[currentStation]) {
+                    if (unvisitedStations.has(neighbor)) {
+                        const newDistance = distancesFromStart[currentStation] + distances[currentStation][neighbor];
+                        if (newDistance < distancesFromStart[neighbor]) {
+                            distancesFromStart[neighbor] = newDistance;
+                            previousStations[neighbor] = currentStation;
+                        }
+                    }
+                }
+            }
+
+            const path = [];
+            let current = end;
+            while (current) {
+                path.unshift(current);
+                current = previousStations[current];
+            }
+
+            return {
+                distance: distancesFromStart[end],
+                path: path.length ? path : null
+            };
+        }
+
+        function confirmAndRedirect() {
+            const startStation = document.getElementById('startStation').value;
+            const finalStation = document.getElementById('finalStation').value;
+
+            if (!startStation || !finalStation) {
+                alert("Please select both start and final stations");
+                return;
+            }
+
+            const { distance, path } = dijkstra(startStation, finalStation);
+
+            if (distance !== null) {
+                alert(`Total distance: ${distance} km\nPath: ${path.join(' -> ')}`);
+            } else {
+                alert("No path found.");
+            }
+
+            // تخزين البيانات في localStorage
+            localStorage.setItem('startStation', startStation);
+            localStorage.setItem('finalStation', finalStation);
+            localStorage.setItem('distance', distance);
+            localStorage.setItem('duration', Math.ceil(distance * 1)); // 1 minute per kilometer
+            localStorage.setItem('price', distance * 0.25); // 0.25 ريال لكل كيلومتر
+
+            window.location.href = "checkout.html"; // الانتقال إلى صفحة التشيك أوت
+        }
+
+        function zoomIn() {
+            scale *= 1.2;
+            updateImageTransform();
+        }
+
+        function zoomOut() {
+            scale /= 1.2;
+            updateImageTransform();
+        }
+
+        function updateImageTransform() {
+            const preview = document.getElementById('preview');
+            preview.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        // إعدادات السحب والإفلات للصورة
+        let scale = 1;
+        let posX = 0;
+        let posY = 0;
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+        const container = document.querySelector('.image-container');
+
+        container.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = posX;
+            initialY = posY;
+            container.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            posX = initialX + deltaX / scale;
+            posY = initialY + deltaY / scale;
+
+            updateImageTransform();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            container.style.cursor = 'grab';
+        });
+
+        container.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            initialX = posX;
+            initialY = posY;
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+
+            posX = initialX + deltaX / scale;
+            posY = initialY + deltaY / scale;
+
+            updateImageTransform();
+        });
+
+        container.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // إضافة التحكم في التكبير والتصغير
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = container.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const offsetY = e.clientY - rect.top;
+
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = scale * delta;
+
+            posX = offsetX - (offsetX - posX) * (newScale / scale);
+            posY = offsetY - (offsetY - posY) * (newScale / scale);
+
+            scale = newScale;
+            updateImageTransform();
+        });
+
+        function navigateToTickets() {
+        window.location.href = "recent-tickets.html"; 
+    }
+    </script>
+</body>
+</html>

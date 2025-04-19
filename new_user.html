@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User Registration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .registration-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #81C784;
+            box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="" disabled selected>Select your gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="birthdate">Date of Birth</label>
+                <input type="date" id="birthdate" required>
+            </div>
+            <button type="submit" class="submit-btn">Submit</button>
+            <div class="error-message" id="error-message"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const gender = document.getElementById('gender').value;
+            const birthdate = document.getElementById('birthdate').value;
+
+            // Validate username and password
+            if (!validateUsername(username) || !validatePassword(password)) {
+                return;
+            }
+
+            const storedCredentials = JSON.parse(localStorage.getItem('credentials')) || {};
+
+            // Check if username already exists
+            if (storedCredentials[username]) {
+                document.getElementById('error-message').innerText = 'Username already exists.';
+                return;
+            }
+
+            // Check if password is already used by another user
+            const passwordExists = Object.values(storedCredentials).includes(password);
+            if (passwordExists) {
+                document.getElementById('error-message').innerText = 'Invalid Password! This password is already used by another account.';
+                return;
+            }
+
+            // Save new user details
+            storedCredentials[username] = password; // Save username and password
+            localStorage.setItem('credentials', JSON.stringify(storedCredentials));
+
+            alert('User registered successfully! You can now log in.');
+            window.location.href = 'Login2.html'; // Redirect to login page
+        });
+
+        function validateUsername(username) {
+            const lengthValid = username.length >= 5;
+            const numberValid = /\d/.test(username);
+            if (!lengthValid || !numberValid) {
+                document.getElementById('error-message').innerText = 'Username must be at least 5 characters long and contain at least one number.';
+                return false;
+            }
+            return true;
+        }
+
+        function validatePassword(password) {
+            const lengthValid = password.length >= 8;
+            const specialCharacterValid = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            const numberCount = (password.match(/\d/g) || []).length >= 2;
+            if (!lengthValid || !specialCharacterValid || !numberCount) {
+                document.getElementById('error-message').innerText = 'Password must be at least 8 characters long, contain at least one special character, and at least two numbers.';
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

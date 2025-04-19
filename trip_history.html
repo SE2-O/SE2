@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .top-nav {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-icon {
+            font-size: 30px;
+            color: #4CAF50;
+            margin-right: 15px;
+        }
+
+        .favs-btn {
+            width: 40px;
+            height: 40px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .favs-btn i {
+            color: white !important;
+            font-size: 20px;
+            transition: color 0.3s;
+        }
+
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        .payment-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+
+        .payment-button:hover {
+            background-color: #218838;
+        }
+
+        .favorite-item-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #030000;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #28a745;
+            color: #faf7f7;
+            font-weight: 600;
+        }
+
+        .heart-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+            color: #ccc;
+            transition: all 0.3s;
+        }
+
+        .heart-button.added {
+            color: #28a745;
+        }
+
+        .heart-button:hover {
+            color: #28a745;
+        }
+
+        #favoritesSection {
+            display: none;
+        }
+
+        .favorite-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-nav">
+        <a href="index.html">
+            <i class="fas fa-home header-icon" title="Home"></i>
+        </a>
+        <button class="favs-btn favorite" title="Favorites" onclick="goToFavorites()">
+            <i class="fas fa-heart" style="color: white;"></i>
+        </button>
+
+    </div>
+
+
+    <div class="container">
+
+        <div id="historySection">
+            <h2>Trip History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trip (Start - Final)</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="historyContent">
+
+                </tbody>
+            </table>
+        </div>
+
+
+
+        <script>
+
+
+
+            function renderHistory() {
+                const tbody = document.getElementById('historyContent');
+                tbody.innerHTML = '';
+
+                const trips = JSON.parse(localStorage.getItem('tripHistory')) || [];
+                const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+                if (trips.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666;">No trip history available</td></tr>';
+                    return;
+                }
+                trips.forEach(trip => {
+                    const row = document.createElement('tr');
+                    const stateClass = getStateClass(trip.state);
+                    const isFav = favorites.some(fav => fav.trip === trip.trip) ? 'added' : '';
+
+                    row.innerHTML = `
+            <td>${trip.trip}</td>
+            <td>${trip.date}</td>
+            <td>
+                <button class="heart-button ${isFav}" onclick="toggleFavorite('${trip.trip}')">
+                    <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                </button>
+            </td>
+        `;
+                    tbody.appendChild(row);
+                });
+
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+                renderHistory();
+            });
+
+
+
+
+            function toggleFavorite(tripName) {
+                let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+                let tripHistory = JSON.parse(localStorage.getItem('tripHistory')) || [];
+
+                const tripToAdd = tripHistory.find(trip => trip.trip === tripName);
+
+                if (!tripToAdd) {
+                    alert("⚠️ Error: Trip not found in history!");
+                    return;
+                }
+
+                const favIndex = favorites.findIndex(fav => fav.trip === tripName);
+
+                if (favIndex === -1) {
+                    //  حفظ جميع البيانات المهمة للشراء لاحقًا
+                    favorites.push({
+                        trip: tripToAdd.trip,
+                        startStation: tripToAdd.startStation,
+                        destination: tripToAdd.destination,
+                        price: tripToAdd.price || 0,
+                        distance: tripToAdd.distance || 0,
+                        duration: tripToAdd.duration || 0
+                    });
+                } else {
+                    favorites.splice(favIndex, 1);
+                }
+
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                renderHistory();
+            }
+
+
+
+
+            function getStateClass(state) {
+                switch (state.toLowerCase()) {
+                    case 'complete': return 'state-complete';
+                    case 'in progress': return 'state-in-progress';
+                    case 'cancelled': return 'state-cancelled';
+                    default: return '';
+                }
+            }
+
+            function goToFavorites() {
+                window.location.href = 'favorites.html';
+            }
+        </script>
+
+</body>
+
+</html>

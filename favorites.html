@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Trips</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header-icon {
+            font-size: 30px;
+            color: #4CAF50;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background-color: #28a745;
+            color: rgb(255, 255, 255);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            left: 65px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 60px auto 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .buy-button {
+            background-color: #878282;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .buy-button:hover {
+            background-color: #e68900;
+            transform: scale(1.05);
+        }
+
+        .buy-button:active {
+            background-color: #cc7700;
+            /*  عند الضغط، يصبح اللون أغمق */
+            transform: scale(0.95);
+            /*  يصغر قليلاً */
+        }
+
+        .back-button svg {
+            stroke: white !important;
+            /*  يضمن أن السهم يبقى أبيض */
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html">
+        <i class="fas fa-home header-icon" title="Home"></i>
+    </a>
+    <button class="back-button" title="Back" onclick="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18L9 12L15 6"></path>
+        </svg>
+    </button>
+
+    <div class="container">
+        <h2>Favorite Trips</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Trip (Start - Final)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="favoritesContent">
+                <!--  سيتم تحميل الرحلات المفضلة هنا -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function renderFavorites() {
+            const tbody = document.getElementById('favoritesContent');
+            tbody.innerHTML = '';
+
+            //  جلب الرحلات من `localStorage.favorites`
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+            if (favorites.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#666;">No favorite trips added</td></tr>';
+                return;
+            }
+
+            favorites.forEach(trip => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${trip.trip}</td>
+                    <td>
+                        <button class="buy-button" onclick="goToCheckout('${trip.trip}')">Pay Now</button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function goBack() {
+            window.location.href = 'trip_history.html';
+        }
+
+        function toggleFavorite(tripName, fromFavoritesPage = false) {
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            const favIndex = favorites.findIndex(fav => fav.trip === tripName);
+
+            if (favIndex !== -1) {
+                favorites.splice(favIndex, 1);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+
+                if (fromFavoritesPage) {
+                    renderFavorites(); //  تحديث القائمة إذا كنت في صفحة المفضلة
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFavorites();
+        });
+
+        function goToCheckout(tripName) {
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            let selectedTrip = favorites.find(trip => trip.trip === tripName);
+
+            if (!selectedTrip) {
+                alert("⚠️ Error: Trip details not found!");
+                return;
+            }
+
+            //  حفظ جميع المعلومات المهمة في `localStorage`
+            localStorage.setItem('startStation', selectedTrip.startStation);
+            localStorage.setItem('finalStation', selectedTrip.destination);
+            localStorage.setItem('distance', selectedTrip.distance || 0);
+            localStorage.setItem('price', selectedTrip.price || 0);
+            localStorage.setItem('duration', selectedTrip.duration || 0);
+
+            console.log("✅ Sending trip to checkout:", selectedTrip); //  تأكد من أن البيانات صحيحة
+
+            //  الانتقال إلى صفحة `checkOut.html`
+            window.location.href = 'checkOut.html';
+        }
+    </script>
+</body>
+
+</html>

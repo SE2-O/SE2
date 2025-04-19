@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trip Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color:#2d3436;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
+        .nav .header-icon {
+            font-size: 30px;
+            color: #81c784;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .nav .icon-button {
+            background-color: #81c784; 
+            border: none;
+            border-radius: 50%; 
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .nav .icon-button svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: #2d3436; 
+        }
+
+        .nav .icon-button:hover {
+            background-color: #81c784; 
+        }
+
+        .content-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .qr-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 8px solid #a8e6cf;
+            width: 320px; 
+            height: 320px; 
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        .qr-code {
+            width: 100%; 
+            height: 100%; 
+        }
+
+        .details-container {
+            background-color: #2d3436;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            min-width: 300px;
+        }
+
+        .details-title {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #fff;
+        }
+
+        .details-content {
+            background-color: rgb(209, 213, 219);
+            padding: 20px;
+            border-radius: 10px;
+            color: black;
+        }
+
+        .detail-item {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .qr-container {
+                max-width: 100%;
+            }
+
+            .details-container {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">
+            <i class="fas fa-home header-icon" title="Home"></i>
+        </a>
+        <a href="recent-tickets.html">
+            <button class="icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18L9 12L15 6"></path>
+                </svg>
+            </button>
+        </a>
+    </div>
+
+    <div class="content-container">
+        <div class="qr-container">
+            <canvas id="qrcode" class="qr-code"></canvas>
+        </div>
+
+        <div class="details-container">
+            <h2 class="details-title">Trip details:</h2>
+            <div class="details-content" id="detailsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function generateQRCode() {
+            const ticketDetails = JSON.parse(localStorage.getItem('ticketDetails')) || {
+                startStation: "KAFD",
+                destination: "Sabic",
+                arrivalTime: "6:55 PM",
+                date: "2025/1/26",
+                duration: 60 // مدة الرحلة بالدقائق
+            };
+
+            // حساب وقت انتهاء صلاحية التذكرة
+            const currentTime = new Date();
+            const arrivalTime = new Date(ticketDetails.date + ' ' + ticketDetails.arrivalTime);
+            const expiryTime = new Date(arrivalTime.getTime() + (ticketDetails.duration * 1.5 * 60000)); // إضافة 50% من المدة
+
+            let status = '';
+            if (currentTime > expiryTime) {
+                status = 'Expired';
+            } else {
+                status = 'Valid';
+            }
+
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="detail-item">Start station: ${ticketDetails.startStation}</div>
+                <div class="detail-item">Destination: ${ticketDetails.destination}</div>
+                <div class="detail-item">Arrival time: ${ticketDetails.arrivalTime}</div>
+                <div class="detail-item">Date: ${ticketDetails.date}</div>
+                <div class="detail-item">Status: ${status}</div>
+            `;
+
+            const tripString = JSON.stringify(ticketDetails);
+            const qr = new QRious({
+                element: document.getElementById("qrcode"),
+                value: tripString,
+                size: 320, // تعيين الحجم ليكون بنفس حجم الحاوية
+                background: '#ffffff',
+                foreground: '#000000',
+                level: 'H'
+            });
+        }
+
+        window.onload = generateQRCode;
+    </script>
+</body>
+</html>
