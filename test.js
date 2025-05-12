@@ -113,3 +113,26 @@ assert("Defaults fills missing with default", initializeDefaults({}).distance ==
 
 // formatExpiryDate
 assert("Format expiry '1225'", formatExpiryDate("1225") === "12/25");
+
+// === Non-Functional Test: Performance ===
+const startTime = Date.now();
+dijkstra("A", "C", { A: { B: 1 }, B: { C: 2 }, C: {} });
+const endTime = Date.now();
+const elapsed = endTime - startTime;
+console.log("Execution time for dijkstra:", elapsed + "ms");
+assert("Dijkstra executes under 100ms", elapsed < 100);
+
+// === Non-Functional Test: Security - Password Validation ===
+function validatePasswordSimple(password) {
+    const hasLength = password.length >= 8;
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasTwoNumbers = (password.match(/\d/g) || []).length >= 2;
+
+    return hasLength && hasSpecial && hasTwoNumbers;
+}
+
+assert("Valid password 'Abcd#1234'", validatePasswordSimple("Abcd#1234") === true);
+assert("Missing number", validatePasswordSimple("Abcd#test") === false);
+assert("Too short", validatePasswordSimple("A#1") === false);
+assert("Missing special char", validatePasswordSimple("Abcd1234") === false);
+
