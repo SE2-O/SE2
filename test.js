@@ -1,4 +1,4 @@
-
+// Trigger GitHub Actions run
 const assert = (desc, cond) => console.log(desc + ':', cond ? 'PASS' : 'FAIL');
 
 
