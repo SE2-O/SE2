@@ -1,49 +1,44 @@
-// Trigger GitHub Actions run
+
 const assert = (desc, cond) => console.log(desc + ':', cond ? 'PASS' : 'FAIL');
 
+// validateUsername
+assert("Valid username 'myuser'", validateUsername("myuser") === true);
+assert("Invalid username 'abc'", validateUsername("abc") === false);
 
-function calculateFare(distance) {
-    return distance * 2;
-}
+// showSuccess
+assert("Show success with message", showSuccess("done") === "Success: done");
 
+// selectPayment
+assert("Valid payment 'visa'", selectPayment("visa") === true);
+assert("Invalid payment 'cash'", selectPayment("cash") === false);
 
-function validateName(name) {
-    return name.trim().length > 0;
-}
+// generateQRCode
+assert("Generate QR from id 123", generateQRCode("123") === "QR-123");
 
+// removeExpiredTickets
+const future = new Date(Date.now() + 86400000).toISOString();
+const past = new Date(Date.now() - 86400000).toISOString();
+assert("Remove expired ticket", removeExpiredTickets([{ date: past }, { date: future }]).length === 1);
 
-function toggleFavorite(tripName, favorites) {
-    const index = favorites.findIndex(trip => trip.trip === tripName);
-    if (index !== -1) {
-        favorites.splice(index, 1);
-    } else {
-        favorites.push({ trip: tripName });
-    }
-    return favorites;
-}
+// renderHistory
+const history = [{ station: "A", time: "10:00" }, { station: "B", time: "10:30" }];
+assert("Render history entries", renderHistory(history).length === 2);
 
+// dijkstra
+const graph = { A: { B: 2 }, B: { C: 3 }, C: {} };
+assert("Shortest path from A to C", dijkstra("A", "C", graph) === 5);
+assert("Path not found from A to D", dijkstra("A", "D", graph) === null);
 
-function formatCardNumber(cardNumber) {
-    const digits = cardNumber.replace(/\s/g, '');
-    return digits.match(/.{1,4}/g)?.join(' ') || '';
-}
+// showQRCode
+assert("Show QR for ticket", showQRCode({ id: 7 }) === "QR for: 7");
 
+// goHome
+assert("Go home returns redirect text", goHome() === "Redirected to home");
 
-// Tests for calculateFare
-assert('Fare of 5km = 10', calculateFare(5) === 10);
-assert('Fare of 0km = 0', calculateFare(0) === 0);
+// initializeDefaults
+const defaults = initializeDefaults({ tripName: "Riyadh", distance: 10 });
+assert("Defaults sets tripName", defaults.tripName === "Riyadh");
+assert("Defaults fills missing with default", initializeDefaults({}).distance === 0);
 
-// Tests for validateName
-assert('Valid name "Sara"', validateName("Sara") === true);
-assert('Invalid name "   "', validateName("   ") === false);
-
-// Tests for toggleFavorite
-let favList = [];
-favList = toggleFavorite("Trip A", favList);
-assert('Add Trip A to empty list', favList.length === 1 && favList[0].trip === "Trip A");
-favList = toggleFavorite("Trip A", favList);
-assert('Remove Trip A from list', favList.length === 0);
-
-// Tests for formatCardNumber
-assert('Format "1234567890123456"', formatCardNumber("1234567890123456") === "1234 5678 9012 3456");
-assert('Format "4444 3333"', formatCardNumber("4444 3333") === "4444 3333");
+// formatExpiryDate
+assert("Format expiry '1225'", formatExpiryDate("1225") === "12/25");
