@@ -1,0 +1,15 @@
+name: Run Functional JS Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Run Functional Tests
+      run: |
+        node test.js
